@@ -1,8 +1,9 @@
-"""Figure 4: empirical cumulative distributions of TS errors by reaction class on the full dataset.
+"""Figures 4 and S2: empirical cumulative distributions of TS errors by reaction class.
 
-Rows are reaction classes. The left column is the absolute total barrier error (a-d) and the right
-column the TS force RMSE (e-h). Every error enters its ECDF. Errors below the lower axis limit set
-the starting height of the curve.
+Figure 4 shows the fifteen checkpoints on the full dataset and Figure S2 the seventeen checkpoints on
+the CHNO subset. Rows are reaction classes. The left column is the absolute total barrier error (a-d)
+and the right column the TS force RMSE (e-h). Every error enters its ECDF. Errors below the lower
+axis limit set the starting height of the curve.
 """
 import matplotlib
 matplotlib.use('Agg')
@@ -11,7 +12,7 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import FixedFormatter, FixedLocator, LogLocator, MultipleLocator, NullFormatter
 import numpy as np
 
-from common import CLASSES, COLORS, FULL_MODELS, LABELS, check_text_inside, save, ts_errors
+from common import CLASSES, COHORT_MODELS, COLORS, LABELS, check_text_inside, save, ts_errors
 from figure2 import LEGEND_ORDER
 from figure3 import STYLE
 
@@ -26,8 +27,10 @@ PATTERN = {'mace_mh1_omol': SOLID, 'mace_mh1_omat': SOLID, 'mace_mh1_spice': SOL
            'orbmol_v2': SOLID, 'uma_s_omol': DASH, 'uma_m_omol': SOLID,
            'uma_s_omc': DASH, 'uma_m_omc': SOLID, 'aimnet2_wb97m_d3': DASHDOT,
            'nep89_20250409': DASHDOT, 'sevennet_omni_i12_omol25_low': LONGDASH,
-           'sevennet_omni_i12_spice': LONGDASH}
+           'sevennet_omni_i12_spice': LONGDASH, 'ani1xnr': DOT, 'aimnet2_rxn': DASHDOT}
 CAP = {m: 'round' if PATTERN[m] == DOT else 'butt' for m in PATTERN}
+LEGENDS = {'full': LEGEND_ORDER,
+           'chno': LEGEND_ORDER[:5] + ['aimnet2_rxn'] + LEGEND_ORDER[5:10] + ['ani1xnr'] + LEGEND_ORDER[10:]}
 LW = 1.6
 GRACE = {'font.family': ['Arial', 'Arial Unicode MS'], 'axes.linewidth': 1.0,
          'xtick.direction': 'in', 'ytick.direction': 'in', 'xtick.top': True, 'ytick.right': True,
@@ -70,10 +73,10 @@ def style_axis(ax, metric, show_xticklabels, show_yticklabels):
     ax.tick_params(which='both', top=True, right=True)
 
 
-def draw(ax, table, metric, reaction_class):
+def draw(ax, table, models, metric, reaction_class):
     lower, upper = LIMITS[metric]
     counts = set()
-    for model in FULL_MODELS:
+    for model in models:
         values = table.loc[table.model.eq(model) & table.reaction_class.eq(reaction_class), FIELDS[metric]]
         values = values.dropna().to_numpy()
         counts.add(len(values))
@@ -83,11 +86,12 @@ def draw(ax, table, metric, reaction_class):
     assert len(counts) == 1
 
 
-def main():
-    plt.rcParams.update(STYLE)
-    plt.rcParams.update(GRACE)
-    table = ts_errors('full')
-    width, height = 6.5, 7.45
+def render(cohort, stem):
+    table = ts_errors(cohort)
+    models, order = COHORT_MODELS[cohort], LEGENDS[cohort]
+    assert sorted(order) == sorted(models)
+    # Each legend row beyond five adds 0.19 in.
+    width, height = 6.5, 7.45 + .19 * (-(-len(order) // 3) - 5)
     left, right, wgap = .62, .1, .2
     top, ph, hgap = .1, 1.3, .15
     pw = (width - left - right - wgap) / 2
@@ -97,7 +101,7 @@ def main():
             bottom = height - top - (j + 1) * ph - j * hgap
             ax = fig.add_axes([(left + i * (pw + wgap)) / width, bottom / height, pw / width, ph / height])
             style_axis(ax, metric, j == len(CLASSES) - 1, i == 0)
-            draw(ax, table, metric, reaction_class)
+            draw(ax, table, models, metric, reaction_class)
             label = f'({chr(97 + 4 * i + j)}) {reaction_class}' if metric == 'barrier' else f'({chr(97 + 4 * i + j)})'
             ax.text(.022, .935, label, transform=ax.transAxes, ha='left', va='top', fontsize=11, weight='bold')
             if j == len(CLASSES) - 1:
@@ -107,13 +111,21 @@ def main():
     fig.text(.06 / width, (stack_bottom + (height - top - stack_bottom) / 2) / height, 'Fraction of reactions',
              rotation=90, ha='left', va='center', fontsize=11)
     handles = [Line2D([0], [0], color=COLORS[m], linestyle=PATTERN[m], linewidth=LW + .2, label=LABELS[m],
-                      dash_capstyle=CAP[m]) for m in LEGEND_ORDER]
+                      dash_capstyle=CAP[m]) for m in order]
     legend = fig.legend(handles=handles, loc='lower center', bbox_to_anchor=(.5, .04 / height), ncol=3,
                         frameon=True, fancybox=False, edgecolor='black', framealpha=1,
                         handlelength=3.2, handletextpad=.6, columnspacing=1.6, labelspacing=.32, borderpad=.5)
     legend.get_frame().set_linewidth(.9)
     check_text_inside(fig)
-    save(fig, 'figure4')
+    save(fig, stem)
+    plt.close(fig)
+
+
+def main():
+    plt.rcParams.update(STYLE)
+    plt.rcParams.update(GRACE)
+    render('full', 'figure4')
+    render('chno', 'figureS2')
 
 
 if __name__ == '__main__':

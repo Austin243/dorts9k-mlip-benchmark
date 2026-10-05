@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 
 from common import CHNO_MODELS, CLASSES, COHORT_MODELS, COLORS, FULL_MODELS, LABELS, ROOT, read, tail_statistics, ts_errors
 from figure2 import CONNECTOR_COLOR, FRONT_COLOR, LEGEND_ORDER, MARKERS, SIZE_PATHS, prepare_table
-from figure4 import PATTERN
+from figure4 import LEGENDS, PATTERN
 from figureS3 import FAMILY_COLORS, family
 
 SITE = ROOT / 'results' / 'site'
@@ -18,7 +18,7 @@ FONT = 'Arial, Helvetica, sans-serif'
 SYMBOLS = {'o': 'circle', 's': 'square', 'D': 'diamond', '^': 'triangle-up', 'v': 'triangle-down', 'P': 'cross'}
 DASHES = {'-': 'solid', (0, (3.2, 1.6)): 'dash', (0, (.05, 1.9)): 'dot',
           (0, (5, 1.5, 1, 1.5)): 'dashdot', (0, (6.5, 2)): 'longdash'}
-LINE_DASH = {m: DASHES[PATTERN[m]] for m in FULL_MODELS} | {'ani1xnr': 'dot', 'aimnet2_rxn': 'solid'}
+LINE_DASH = {m: DASHES[p] for m, p in PATTERN.items()}
 ERROR_SCALE = ['#B8DED8', '#E5F0E5', '#FFF0C2', '#E79A67', '#9E413B']
 FORCE_UNIT, ENERGY_UNIT = 'eV/Å', 'kcal/mol'
 HINTS = {True: 'Hover for values. Click a legend entry to hide it, double-click it to show it alone, and drag to zoom.',
@@ -163,7 +163,7 @@ def profile(cohort):
 
 def ecdf(cohort):
     table = ts_errors(cohort)
-    models = COHORT_MODELS[cohort]
+    models = LEGENDS[cohort]
     titles = [f'({chr(97 + 4 * j + i)}) {cls}' for i, cls in enumerate(CLASSES) for j in range(2)]
     fig = make_subplots(rows=4, cols=2, shared_yaxes=True, vertical_spacing=.06, horizontal_spacing=.05,
                         subplot_titles=titles)
