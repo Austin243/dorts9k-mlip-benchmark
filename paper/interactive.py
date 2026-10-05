@@ -19,7 +19,7 @@ from tables import BARRIER, FORCE, bootstrap
 SITE = ROOT / 'results' / 'site'
 REPO = 'https://github.com/Austin243/dorts9k-mlip-benchmark'
 FONT = 'Inter, "Helvetica Neue", Arial, sans-serif'
-INK, MUTED, GRID, AXIS = '#0f172a', '#64748b', '#e9edf2', '#cbd5e1'
+INK, GRID, AXIS = '#0f172a', '#e9edf2', '#cbd5e1'
 SYMBOLS = {'o': 'circle', 's': 'square', 'D': 'diamond', '^': 'triangle-up', 'v': 'triangle-down', 'P': 'cross'}
 DASHES = {'-': 'solid', (0, (3.2, 1.6)): 'dash', (0, (.05, 1.9)): 'dot',
           (0, (5, 1.5, 1, 1.5)): 'dashdot', (0, (6.5, 2)): 'longdash'}
