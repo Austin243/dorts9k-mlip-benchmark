@@ -1,0 +1,4 @@
+-r gpu-base.txt
+mace-torch==0.3.16
+# Required by MACE-POLAR; upstream-recommended release (see README).
+git+https://github.com/WillBaldwin0/graph_electrostatics.git@v0.4.0

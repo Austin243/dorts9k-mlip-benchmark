@@ -1,0 +1,4 @@
+-r gpu-base.txt
+sevenn==0.13.0
+e3nn==0.6.0
+torch-geometric==2.8.0.post1

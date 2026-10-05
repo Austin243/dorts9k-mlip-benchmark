@@ -1,0 +1,10 @@
+check,n_geometries,quantity,value,unit,note
+Historical predictions reproduced,13,Maximum force-component difference,5.859375005456968e-05,eV/angstrom,Original GPUMD settings; differences reflect float32 force storage
+Historical predictions reproduced,13,Maximum total-energy difference,0.0,eV,Original GPUMD settings
+Independent NEP_CPU versus corrected GPUMD,16,Maximum force-component difference,9.097722177386913e-05,eV/angstrom,Same checkpoint and geometry; single-precision GPU plus six-significant-digit text versus double-precision CPU
+Independent NEP_CPU versus corrected GPUMD,16,Maximum total-energy difference,0.00012010299244025191,eV,Same checkpoint and geometry; GPU text precision retained
+CPU energy finite difference versus analytic force,1,Maximum force-component difference over 3 axes,7.951431180153179e-09,eV/angstrom,"TS global index876703, atom0, displacement2e-5angstrom"
+Vacuum margin8 to16angstrom,16,Maximum corrected force-component difference,0.00019999999999953388,eV/angstrom,Batch diagnostic only; no acceptance gate
+Reversed molecule batch order,16,Maximum corrected force-component difference,1.0000000000065512e-05,eV/angstrom,Molecule order reversed; atomic indices unchanged
+Single versus batched first molecule,1,Maximum corrected force-component difference,0.0,eV/angstrom,At retained GPUMD text precision
+Corrected full campaign,909077,Inference errors,0.0,count,16 completed shards; original campaign preserved

@@ -1,0 +1,2 @@
+-r gpu-base.txt
+aimnet==0.2.0

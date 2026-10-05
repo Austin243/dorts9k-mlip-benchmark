@@ -1,0 +1,2 @@
+-r gpu-base.txt
+torchani==2.8.2

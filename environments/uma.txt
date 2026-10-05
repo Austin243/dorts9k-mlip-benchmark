@@ -1,0 +1,2 @@
+-r gpu-base.txt
+fairchem-core==2.17.0

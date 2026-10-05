@@ -1,0 +1,2 @@
+-r gpu-base.txt
+orb-models==0.7.0

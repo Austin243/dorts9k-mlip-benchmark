@@ -1,0 +1,4 @@
+# GPUMD is a compiled CUDA executable; see environments/README.md.
+numpy==2.3.5
+h5py==3.16.0
+ase==3.28.0
