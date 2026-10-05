@@ -69,16 +69,18 @@ def table_s2(data):
     write('tableS2', pd.DataFrame(rows))
 
 
-def table_s3(data):
+def bootstrap(data):
     """Pointwise percentile 95% intervals from 2,000 paired resamples of reactions.
 
     One draw of reaction indices is shared by all checkpoints within a metric. Force is resampled
-    first and barrier second from one continuous random stream.
+    first and barrier second from one continuous random stream. Returns the sorted checkpoint ids and,
+    per metric, the statistic names, estimates, lower and upper bounds, and the number of reactions.
     """
     rng = np.random.default_rng(SEED)
     models = sorted(CHNO_MODELS)
-    for metric, part, names in [(FORCE, 'B', ['mean', 'median']),
-                                (BARRIER, 'A', ['MAE', 'median', 'P99', 'within 1 kcal/mol (%)'])]:
+    results = {}
+    for metric, names in [(FORCE, ['mean', 'median']),
+                          (BARRIER, ['MAE', 'median', 'P99', 'within 1 kcal/mol (%)'])]:
         wide = data.pivot(index='reaction_id', columns='model', values=metric)[models].sort_index().dropna()
         values = wide.to_numpy()
         n = len(values)
@@ -94,6 +96,14 @@ def table_s3(data):
         for i in range(REPLICATES):
             draws[i] = summarize(values[rng.integers(0, n, size=n)])
         lower, upper = np.quantile(draws, [.025, .975], axis=0, method='linear')
+        results[metric] = (names, estimate, lower, upper, n)
+    return models, results
+
+
+def table_s3(data):
+    models, results = bootstrap(data)
+    for metric, part in [(FORCE, 'B'), (BARRIER, 'A')]:
+        names, estimate, lower, upper, n = results[metric]
         rows = []
         for model in CHNO_MODELS:
             j = models.index(model)

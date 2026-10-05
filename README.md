@@ -2,7 +2,7 @@
 
 Code and processed results for our benchmark of pretrained machine-learning interatomic potentials on the DORTS-9K reaction dataset. Fifteen checkpoints are compared with the ωB97M-V/def2-TZVP reference on all 909,077 configurations, and seventeen on the CHNO subset.
 
-Interactive versions of the data figures are at [austin243.github.io/dorts9k-mlip-benchmark](https://austin243.github.io/dorts9k-mlip-benchmark/).
+Interactive versions of the figures and Table 2, including 3D views of the Figure 5 reactions, are at [austin243.github.io/dorts9k-mlip-benchmark](https://austin243.github.io/dorts9k-mlip-benchmark/).
 
 ## Figures and tables
 
@@ -21,9 +21,9 @@ python paper/figure1.py
 | `paper/figure4.py` | Figures 4 and S2, transition-state errors by reaction class |
 | `paper/figureS3.py` | Figure S3, CHNO error tails |
 | `paper/tables.py` | Table 2 and Tables S1 to S5 and S7 |
-| `paper/interactive.py` | The interactive figure pages in `results/site`, which GitHub Pages publishes |
+| `paper/interactive.py` | The interactive site in `results/site`, which GitHub Pages publishes |
 
-Figure 5 is built from VESTA renderings of six reactions and is not generated here. Every quantity is defined in the [calculation notes](docs/calculations.md).
+The static Figure 5 is built from VESTA renderings of six reactions and is not generated here. The site shows the same reactions in 3D. Every quantity is defined in the [calculation notes](docs/calculations.md).
 
 ## Data
 
@@ -36,6 +36,7 @@ Figure 5 is built from VESTA renderings of six reactions and is not generated he
 | `largest_uma_barrier_errors_signed.csv` | Signed total barrier errors of all seventeen checkpoints on the 38 reactions with the largest UMA-M OMol errors (Table S5) |
 | `checkpoints.csv` | Checkpoint files, SHA-256 hashes, heads, precision, and package versions (Table S9) |
 | `nep89_checks.csv` | Independent checks of the NEP89 inference (Table S10) |
+| `figure5_reactions.json` | Reactant, transition-state, and product geometries of the six Figure 5 reactions from DORTS-9K, aligned on the transition state, with their changing contacts and errors |
 | `reaction_manifest.csv` | Reaction identifiers, formulas, templates, and reaction classes |
 
 The per-configuration model predictions are not included. DORTS-9K itself is available from [Zenodo](https://doi.org/10.5281/zenodo.17141108).
