@@ -12,3 +12,4 @@ jobs:
       - run: pip install '.[analysis,test]'
       - run: pytest -q
       - run: python paper/tables.py
+      - run: python paper/interactive.py

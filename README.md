@@ -2,6 +2,8 @@
 
 Code and processed results for our benchmark of pretrained machine-learning interatomic potentials on the DORTS-9K reaction dataset. Fifteen checkpoints are compared with the ωB97M-V/def2-TZVP reference on all 909,077 configurations, and seventeen on the CHNO subset.
 
+Interactive versions of the data figures are at [austin243.github.io/dorts9k-mlip-benchmark](https://austin243.github.io/dorts9k-mlip-benchmark/).
+
 ## Figures and tables
 
 The scripts in `paper/` rebuild the data figures and tables of the paper from the processed results in `data/`. Run them from the repository root after installing the analysis environment. They write to `results/figures` and `results/tables` and use the Arial font.
@@ -16,10 +18,10 @@ python paper/figure1.py
 | `paper/figure1.py` | Figure 1, global error distributions |
 | `paper/figure2.py` | Figure 2, accuracy against evaluation time |
 | `paper/figure3.py` | Figures 3 and S1, errors at the five direct anchors |
-| `paper/figure4.py` | Figure 4, transition-state errors by reaction class |
-| `paper/figureS2.py` | Figure S2, the CHNO version of Figure 4 |
+| `paper/figure4.py` | Figures 4 and S2, transition-state errors by reaction class |
 | `paper/figureS3.py` | Figure S3, CHNO error tails |
 | `paper/tables.py` | Table 2 and Tables S1 to S5 and S7 |
+| `paper/interactive.py` | The interactive figure pages in `results/site`, which GitHub Pages publishes |
 
 Figure 5 is built from VESTA renderings of six reactions and is not generated here. Every quantity is defined in the [calculation notes](docs/calculations.md).
 
