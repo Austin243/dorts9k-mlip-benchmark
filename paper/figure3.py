@@ -31,7 +31,7 @@ STYLE = {'font.family': 'Arial', 'font.size': 8.5, 'text.color': 'black',
          'ytick.color': 'black', 'pdf.fonttype': 42, 'ps.fonttype': 42, 'svg.fonttype': 'none'}
 
 
-def render(summary, models, stem):
+def render(summary, models, stem, colorbar_line):
     nr = len(models)
     fig = plt.figure(figsize=(7.7, 5.30 if nr == 15 else 5.78))
     ax = fig.add_axes([.013, .154, .974, .829])
@@ -97,8 +97,8 @@ def render(summary, models, stem):
         bar.ax.xaxis.set_major_locator(FixedLocator(ticks))
         bar.ax.xaxis.set_major_formatter(FixedFormatter([f'{x:g}' for x in ticks]))
         bar.ax.xaxis.set_minor_locator(NullLocator())
-        bar.ax.tick_params(labelsize=8, length=1.8, width=.5, pad=1.3)
-        bar.outline.set_linewidth(.5)
+        bar.ax.tick_params(labelsize=8, length=1.8, width=colorbar_line, pad=1.3)
+        bar.outline.set_linewidth(colorbar_line)
         bar.set_label(label + ' · log color scale', fontsize=8, labelpad=2)
     fig.text(.014, .016, f'Medians across {int(summary.n_reactions.iloc[0]):,} reactions; direct anchors only.',
              fontsize=8, va='bottom')
@@ -110,12 +110,13 @@ def render(summary, models, stem):
 def main():
     plt.rcParams.update(STYLE)
     statistics = read('profile_statistics.csv')
-    for cohort, n_reactions, stem in [('full', 8474, 'figure3'), ('chno', 3706, 'figureS1')]:
+    # Figure 3 is printed at 7 in, so its colorbar ticks and outlines are 0.6 pt and stay above 0.5 pt.
+    for cohort, n_reactions, stem, colorbar_line in [('full', 8474, 'figure3', .6), ('chno', 3706, 'figureS1', .5)]:
         summary = statistics[statistics.cohort.eq(cohort)]
         models = COHORT_MODELS[cohort]
         assert set(summary.model) == set(models) and summary.n_reactions.eq(n_reactions).all()
         assert len(summary) == 9 * len(models)
-        render(summary, models, stem)
+        render(summary, models, stem, colorbar_line)
 
 
 if __name__ == '__main__':
