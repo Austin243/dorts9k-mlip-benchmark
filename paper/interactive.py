@@ -18,6 +18,7 @@ from tables import BARRIER, FORCE, bootstrap
 
 SITE = ROOT / 'results' / 'site'
 REPO = 'https://github.com/Austin243/dorts9k-mlip-benchmark'
+DATASET = 'https://doi.org/10.5281/zenodo.17141108'
 FONT = 'Inter, "Helvetica Neue", Arial, sans-serif'
 INK, GRID, AXIS = '#0f172a', '#e9edf2', '#cbd5e1'
 SYMBOLS = {'o': 'circle', 's': 'square', 'D': 'diamond', '^': 'triangle-up', 'v': 'triangle-down', 'P': 'cross'}
@@ -62,10 +63,12 @@ PAGES = [
      'CHNO reactions, sorted by barrier MAE. Error bars are the pointwise 95% bootstrap intervals of Table S3. '
      'Hovering also gives the MAE as a percentage of the mean DFT barrier, 62.9 kcal/mol.', False),
     ('figure5', 'Figure 5', 'Reactions with large UMA-M OMol errors',
-     'Six CHNO reactions in 3D, from reactant through transition state to product',
+     'Six CHNO reactions in 3D from reactant through transition state to product, and six more of each class',
      'Six CHNO reactions with large UMA-M OMol errors, with the transition-state force RMSE and absolute total barrier '
-     'error of UMA-M OMol and AIMNet2-RXN. Dashed lines mark contacts that form or break, and their lengths are listed '
-     'under each view for the reactant, transition state, and product. Atoms are numbered within each element.', '3d'),
+     'error of UMA-M OMol and AIMNet2-RXN. The class tabs add six more CHNO reactions of each reaction class, spread '
+     'over the UMA-M OMol barrier errors of that class. Dashed lines mark contacts that form or break, and their '
+     'lengths are listed under each view for the reactant, transition state, and product. Atoms are numbered within '
+     'each element.', '3d'),
     ('figureS1', 'Figure S1', 'Reaction-profile errors on the CHNO subset',
      'Figure 3 for seventeen checkpoints on the CHNO reactions',
      'The same comparison as Figure 3 for seventeen checkpoints on the 3,706 CHNO reactions with all five anchors.', False),
@@ -307,87 +310,62 @@ def molecule(reaction, frame='ts'):
     return fig
 
 
-def hero_curves(width=1200, height=420):
-    """Background lines drawn from the Figure 4 data, the barrier-error ECDF of each checkpoint."""
-    table = ts_errors('full').dropna(subset=['barrier_error_kcal_mol'])
-    q = np.linspace(.002, .998, 140)
-    lines = []
-    for model in FULL_MODELS:
-        x = np.log10(np.clip(np.quantile(table.loc[table.model.eq(model), 'barrier_error_kcal_mol'], q), 1e-3, 100))
-        points = ' '.join(f'{(v + 3) / 5 * width:.1f},{height * (.95 - .9 * p):.1f}' for v, p in zip(x, q))
-        lines.append(f'<polyline points="{points}" stroke="{COLORS[model]}"/>')
-    return (f'<svg class="curves" viewBox="0 0 {width} {height}" preserveAspectRatio="none" aria-hidden="true">'
-            f'<g fill="none" stroke-width="2.2" vector-effect="non-scaling-stroke">{"".join(lines)}</g></svg>')
-
-
 CSS = '''
-:root { --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; --bg: #f5f7fb; --accent: #2563eb; --navy: #0b1f3a; }
+:root { --ink: #1b1f24; --muted: #5f6b7a; --line: #dde2e8; --accent: #1d4f91; --navy: #0b1f3a;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif; }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: Inter, "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: var(--bg);
+body { margin: 0; font-family: Inter, "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: #fff;
   line-height: 1.55; -webkit-font-smoothing: antialiased; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
-.topbar { position: sticky; top: 0; z-index: 10; background: rgba(11, 31, 58, .94); backdrop-filter: blur(8px); }
-.topbar .wrap { display: flex; align-items: center; gap: 18px; height: 56px; }
-.brand { color: #fff; font-weight: 700; white-space: nowrap; }
-.brand span { color: #7dd3fc; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+.topbar { border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; gap: 24px; }
+.brand { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--ink); white-space: nowrap; padding: 13px 0; }
 .brand:hover { text-decoration: none; }
-.nav { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-left: auto; }
-.nav a { color: #cbd5e1; padding: 6px 10px; border-radius: 999px; font-size: 14px; white-space: nowrap; }
-.nav a:hover { background: rgba(255, 255, 255, .1); color: #fff; text-decoration: none; }
-.nav a.current { background: #fff; color: var(--navy); font-weight: 600; }
-.hero { position: relative; overflow: hidden; color: #fff;
-  background: radial-gradient(900px 420px at 85% 0%, #1e4f8a 0%, rgba(30, 79, 138, 0) 70%),
-              linear-gradient(160deg, #0b1f3a 0%, #10294a 60%, #0c2240 100%); }
-.hero .curves { position: absolute; left: 0; bottom: 0; width: 100%; height: 78%; opacity: .5; }
-.hero .shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11, 31, 58, .92) 0%,
-  rgba(11, 31, 58, .55) 55%, rgba(11, 31, 58, .15) 100%); }
-.hero .wrap { position: relative; padding: 70px 20px 60px; }
-.eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; color: #7dd3fc; font-weight: 600; }
-.hero h1 { font-size: clamp(30px, 4.4vw, 50px); line-height: 1.1; margin: 12px 0 16px; max-width: 860px; }
-.lede { font-size: 18px; color: #dbe5f1; max-width: 720px; margin: 0; }
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 36px; max-width: 980px; }
-.stat { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .16); border-radius: 14px;
-  padding: 14px 16px; backdrop-filter: blur(4px); }
-.stat b { display: block; font-size: 28px; line-height: 1.2; }
-.stat span { color: #c7d4e4; font-size: 13px; }
-.cta { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
-.button { display: inline-block; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 15px; }
-.button:hover { text-decoration: none; filter: brightness(1.05); }
-.button.primary { background: #fff; color: var(--navy); }
-.button.ghost { border: 1px solid rgba(255, 255, 255, .35); color: #fff; }
-section { padding: 44px 0 20px; }
-h2 { font-size: 24px; margin: 0 0 4px; }
-.sub { color: var(--muted); margin: 0 0 22px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
-.card { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; color: inherit;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px rgba(15, 23, 42, .06); }
-a.card { display: flex; flex-direction: column; transition: transform .15s ease, box-shadow .15s ease; }
-a.card:hover { transform: translateY(-3px); text-decoration: none;
-  box-shadow: 0 2px 4px rgba(15, 23, 42, .06), 0 18px 36px rgba(15, 23, 42, .12); }
-.thumb { aspect-ratio: 16 / 10; background: #fff; border-bottom: 1px solid var(--line); overflow: hidden; }
-.thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
-.card .body { padding: 14px 16px 18px; }
+.nav { display: flex; gap: 18px; overflow-x: auto; scrollbar-width: none; margin-left: auto; }
+.nav a { color: var(--muted); font-size: 14px; white-space: nowrap; padding: 16px 0 13px; border-bottom: 2px solid transparent; }
+.nav a:hover { color: var(--ink); text-decoration: none; }
+.nav a.current { color: var(--ink); border-bottom-color: var(--ink); }
+.paper { max-width: 880px; margin: 0 auto; padding: 52px 20px 0; }
+.paper h1 { font-family: var(--serif); font-size: clamp(28px, 3.6vw, 38px); font-weight: 600; line-height: 1.2; margin: 0 0 12px; }
+.paper h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 40px 0 12px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--line); }
+.paper p { font-family: var(--serif); font-size: 17px; line-height: 1.65; margin: 0 0 14px; }
+.paper .subtitle { font-size: 19px; line-height: 1.5; color: #3b4450; }
+.paper .links { display: flex; gap: 6px 24px; flex-wrap: wrap; font-family: inherit; font-size: 15px; }
+.facts { width: 100%; border-collapse: collapse; font-size: 15px; }
+.facts tr { border-top: 1px solid var(--line); }
+.facts tr:last-child { border-bottom: 1px solid var(--line); }
+.facts th { width: 1%; padding: 8px 22px 8px 0; text-align: left; font-weight: 600; white-space: nowrap; vertical-align: top; }
+.facts td { padding: 8px 0; }
+.figures { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px 24px; margin-top: 20px; }
+.figure { display: block; color: var(--ink); font-size: 14px; line-height: 1.45; }
+.figure:hover { text-decoration: none; }
+.figure img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top center;
+  border: 1px solid var(--line); margin-bottom: 9px; }
+.figure:hover img { border-color: #98a3b3; }
+.figure:hover span { text-decoration: underline; }
+.figure small { display: block; margin-top: 2px; color: var(--muted); font-size: 13.5px; }
+.page-head { max-width: 920px; padding: 34px 0 0; }
+.page-head h1 { font-family: var(--serif); font-size: clamp(24px, 3vw, 30px); font-weight: 600; line-height: 1.25; margin: 0 0 10px; }
+.caption { font-family: var(--serif); font-size: 17px; line-height: 1.6; color: #2b323b; margin: 0; }
+.tips { font-size: 13.5px; color: var(--muted); margin: 10px 0 20px; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.plot { padding: 10px; }
+.pager { display: flex; justify-content: space-between; gap: 20px; margin: 30px 0 0; padding-top: 16px;
+  border-top: 1px solid var(--line); font-size: 15px; }
+.pager a.next { text-align: right; }
+.pager small { display: block; color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; padding: 20px 0 40px; margin-top: 40px; }
+.tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs button { font: inherit; font-size: 15px; color: var(--muted); background: none; border: 0;
+  border-bottom: 2px solid transparent; padding: 8px 0; cursor: pointer; white-space: nowrap; }
+.tabs button:hover { color: var(--ink); }
+.tabs button.on { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+.tab-note { font-size: 14px; color: #3b4450; margin: 10px 0 16px; min-height: 22px; }
 .tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); background: #eef3ff;
   border-radius: 999px; padding: 2px 10px; }
-.tag.new { color: #0f766e; background: #e6f6f4; margin-left: 6px; }
-.card h3 { margin: 8px 0 4px; font-size: 17px; line-height: 1.3; }
-.card p { margin: 0; color: var(--muted); font-size: 14px; }
-.page-head { padding: 30px 0 4px; }
-.page-head h1 { font-size: clamp(24px, 3vw, 32px); margin: 10px 0 8px; line-height: 1.2; }
-.caption { color: #334155; max-width: 920px; margin: 0; }
-.tips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 18px; }
-.tips span { font-size: 13px; color: #334155; background: #fff; border: 1px solid var(--line); border-radius: 999px;
-  padding: 4px 11px; }
-.plot { padding: 10px; }
-.pager { display: flex; justify-content: space-between; gap: 14px; margin: 24px 0 8px; }
-.pager a { flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px;
-  font-weight: 600; color: var(--ink); }
-.pager a:hover { border-color: #b6c2d2; text-decoration: none; }
-.pager a.next { text-align: right; }
-.pager small { display: block; color: var(--muted); font-weight: 500; }
-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; padding: 22px 0 40px; margin-top: 30px; }
 .molecules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .mol-head { display: flex; align-items: baseline; gap: 10px; padding: 14px 16px 2px; flex-wrap: wrap; }
 .letter { font-weight: 700; font-size: 18px; }
@@ -402,6 +380,7 @@ footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px
 .errors { display: grid; grid-template-columns: max-content 1fr 1fr; gap: 8px 16px; padding: 10px 16px 14px;
   font-size: 14px; align-items: center; border-top: 1px solid var(--line); margin-top: 4px; }
 .errors .head { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.errors .row { display: contents; }
 .who { display: flex; align-items: center; gap: 8px; font-weight: 600; }
 .who i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .meter b { font-variant-numeric: tabular-nums; }
@@ -418,10 +397,11 @@ footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px
 .legend-row .controls { padding: 0; margin-left: auto; }
 @media (max-width: 900px) { .molecules { grid-template-columns: 1fr; } }
 @media (max-width: 760px) {
-  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hero .wrap { padding: 44px 16px 40px; }
   .wrap { padding: 0 16px; }
-  .brand { font-size: 14px; }
+  .paper { padding: 36px 16px 0; }
+  .topbar .wrap { flex-wrap: wrap; gap: 0; }
+  .nav { margin-left: 0; width: 100%; }
+  .nav a { padding: 4px 0 10px; }
 }
 '''
 
@@ -434,7 +414,7 @@ HEAD = '''<!doctype html>
 <meta name="description" content="{description}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -454,10 +434,14 @@ document.fonts && document.fonts.ready.then(function () {{
 FIGURE5_SCRIPT = '''
 <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.5/3Dmol-min.js"></script>
 <script>
-const reactions = JSON.parse(document.getElementById('reactions').textContent);
-reactions.forEach(rx => { const n = {}; rx.labels = rx.symbols.map(s => s + (n[s] = (n[s] || 0) + 1)); });
+const config = JSON.parse(document.getElementById('reactions').textContent);
+config.groups.forEach(g => g.reactions.forEach(rx => {
+  const n = {};
+  rx.labels = rx.symbols.map(s => s + (n[s] = (n[s] || 0) + 1));
+}));
 const STYLE = {C: ['#555B66', .36], H: ['#EEF0F3', .24], N: ['#4267C8', .35], O: ['#D44E4B', .35]};
 const FRAMES = ['reactant', 'ts', 'product'];
+const METRICS = ['ts_force_rmse_ev_per_a', 'barrier_error_kcal_mol'];
 const players = [];
 function at(p) { return {x: p[0], y: p[1], z: p[2]}; }
 function draw(entry) {
@@ -495,25 +479,64 @@ function toggle(entry) {
   entry.play.textContent = 'Pause';
   entry.timer = setInterval(() => show(entry, FRAMES[(FRAMES.indexOf(entry.frame) + 1) % 3]), 1100);
 }
-document.querySelectorAll('.molecule').forEach((card, i) => {
-  const entry = {reaction: reactions[i], frame: 'ts', timer: null};
+function fill(entry, rx, peak) {
+  const card = entry.card;
+  entry.reaction = rx;
+  card.querySelector('.letter').textContent = rx.panel;
+  card.querySelector('.formula').innerHTML = rx.formula.replace(/\\d+/g, d => '<sub>' + d + '</sub>');
+  card.querySelector('.tag').textContent = rx.percentile ? rx.percentile + 'th percentile' : rx.reaction_class;
+  card.querySelector('.rid').textContent = rx.reaction_id;
+  card.querySelectorAll('.errors .row').forEach(row => row.remove());
+  config.models.forEach(([key, name, color]) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = '<div class="who"><i style="background:' + color + '"></i>' + name + '</div>' + METRICS.map(m => {
+      const value = rx.errors[key][m];
+      const digits = m === 'barrier_error_kcal_mol' && value >= 10 ? 2 : 3;  // as printed in the paper
+      return '<div class="meter"><b>' + value.toFixed(digits) + '</b><div><span style="width:' +
+        (100 * value / peak[m]).toFixed(1) + '%;background:' + color + '"></span></div></div>';
+    }).join('');
+    card.querySelector('.errors').appendChild(row);
+  });
+  card.querySelector('.dft').textContent = 'DFT barrier ' + rx.dft_barrier_kcal_mol.toFixed(1) +
+    ' kcal/mol, measured from the ' + rx.reference_endpoint;
+}
+function select(key) {
+  const group = config.groups.find(g => g.key === key) || config.groups[0];
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.group === group.key));
+  document.getElementById('tab-note').textContent = group.note;
+  const peak = {};
+  METRICS.forEach(m => { peak[m] = Math.max(...group.reactions.flatMap(r => config.models.map(([k]) => r.errors[k][m]))); });
+  players.forEach((entry, i) => {
+    if (entry.timer) toggle(entry);
+    fill(entry, group.reactions[i], peak);
+    show(entry, 'ts');
+    entry.viewer.zoomTo();
+    entry.viewer.zoom(1.15);
+    entry.viewer.render();
+  });
+  playAll.textContent = 'Play all';
+  history.replaceState(null, '', group === config.groups[0] ? location.pathname : '#' + group.key);
+}
+document.querySelectorAll('.molecule').forEach(card => {
+  const entry = {card: card, frame: 'ts', timer: null};
   entry.viewer = $3Dmol.createViewer(card.querySelector('.viewer'), {backgroundColor: 'white', antialias: true});
   entry.buttons = Array.from(card.querySelectorAll('button[data-frame]'));
   entry.buttons.forEach(b => b.addEventListener('click', () => show(entry, b.dataset.frame)));
   entry.play = card.querySelector('.play');
   entry.contacts = card.querySelector('.contacts');
   entry.play.addEventListener('click', () => toggle(entry));
-  show(entry, 'ts');
-  entry.viewer.zoomTo();
-  entry.viewer.zoom(1.15);
-  entry.viewer.render();
   players.push(entry);
 });
-document.getElementById('play-all').addEventListener('click', function () {
+const playAll = document.getElementById('play-all');
+playAll.addEventListener('click', function () {
   const running = players.some(e => e.timer);
   players.forEach(e => { if (!!e.timer === running) toggle(e); });
   this.textContent = running ? 'Play all' : 'Pause all';
 });
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => select(b.dataset.group)));
+window.addEventListener('hashchange', () => select(location.hash.slice(1)));
+select(location.hash.slice(1));
 </script>
 '''
 
@@ -521,8 +544,8 @@ document.getElementById('play-all').addEventListener('click', function () {
 def topbar(current):
     links = ''.join(f'<a href="{stem}.html"{" class=current" if stem == current else ""}>{label}</a>'
                     for stem, label, *_ in PAGES)
-    return (f'<div class="topbar"><div class="wrap"><a class="brand" href="index.html">DORTS-9K <span>MLIP</span> '
-            f'benchmark</a><nav class="nav">{links}<a href="{REPO}">GitHub</a></nav></div></div>\n')
+    return (f'<div class="topbar"><div class="wrap"><a class="brand" href="index.html">DORTS-9K MLIP benchmark</a>'
+            f'<nav class="nav">{links}<a href="{REPO}">GitHub</a></nav></div></div>\n')
 
 
 def page(stem, label, title, caption, legend, body):
@@ -534,63 +557,56 @@ def page(stem, label, title, caption, legend, body):
     pager += (f'<a class="next" href="{following[0]}.html"><small>Next</small>{following[1]}. {following[2]}</a>'
               if following else '<a class="next" href="index.html"><small>Back to</small>All figures</a>')
     pager += '</div>'
-    tips = ''.join(f'<span>{t}</span>' for t in TIPS[legend])
-    return (topbar(stem) + f'<main class="wrap"><div class="page-head"><span class="tag">{label}</span><h1>{title}</h1>'
-            f'<p class="caption">{caption}</p></div><div class="tips">{tips}</div>{body}{pager}</main>\n')
+    tips = ' '.join(f'{t}.' for t in TIPS[legend])
+    return (topbar(stem) + f'<main class="wrap"><div class="page-head"><h1>{label}. {title}</h1>'
+            f'<p class="caption">{caption}</p><p class="tips">{tips}</p></div>{body}{pager}</main>\n')
 
 
-def figure5_body(reactions):
-    peak = {k: max(r['errors'][m][k] for r in reactions for m in MODEL_COLORS)
-            for k in ['ts_force_rmse_ev_per_a', 'barrier_error_kcal_mol']}
+def figure5_body(reactions, examples):
+    """Six viewers whose reactions switch between the Figure 5 set and six examples of each reaction class."""
+    uma = ts_errors('chno').query("model == 'uma_m_omol'").dropna(subset=['barrier_error_kcal_mol'])
+    counts = uma.reaction_class.value_counts()
+    groups = [dict(key='figure5', label='Figure 5', note='The six reactions of Figure 5.', reactions=reactions)]
+    for reaction_class in CLASSES:
+        part = [e for e in examples if e['reaction_class'] == reaction_class]
+        levels = [e['percentile'] for e in part]
+        assert len(part) == 6 and levels == sorted(levels)
+        groups.append(dict(key=reaction_class.lower(), label=reaction_class, reactions=part, note=(
+            f'Six of the {counts[reaction_class]:,} CHNO {reaction_class.lower()} reactions with both endpoints, at the '
+            f'{", ".join(f"{p}th" for p in levels[:-1])}, and {levels[-1]}th percentiles of the UMA-M OMol total barrier '
+            'error (a to f).')))
     names = {'uma_m_omol': 'UMA-M OMol', 'aimnet2_rxn': 'AIMNet2-RXN'}
-    cards = []
-    for r in reactions:
-        formula = ''.join(f'<sub>{c}</sub>' if c.isdigit() else c for c in r['formula'])
-        rows = ''
-        for model, color in MODEL_COLORS.items():
-            cells = ''
-            for key in ['ts_force_rmse_ev_per_a', 'barrier_error_kcal_mol']:
-                value = r['errors'][model][key]
-                digits = 2 if key == 'barrier_error_kcal_mol' and value >= 10 else 3  # as printed in the paper
-                cells += (f'<div class="meter"><b>{value:.{digits}f}</b><div><span style="width:{100 * value / peak[key]:.1f}%;'
-                          f'background:{color}"></span></div></div>')
-            rows += f'<div class="who"><i style="background:{color}"></i>{names[model]}</div>{cells}'
-        cards.append(
-            f'<div class="card molecule"><div class="mol-head"><span class="letter">{r["panel"]}</span>'
-            f'<span class="formula">{formula}</span><span class="tag">{r["reaction_class"]}</span>'
-            f'<span class="rid">{r["reaction_id"]}</span></div><div class="viewer"></div>'
+    config = dict(models=[[m, names[m], color] for m, color in MODEL_COLORS.items()], groups=groups)
+    card = ('<div class="card molecule"><div class="mol-head"><span class="letter"></span><span class="formula"></span>'
+            '<span class="tag"></span><span class="rid"></span></div><div class="viewer"></div>'
             '<div class="controls"><button data-frame="reactant">Reactant</button><button data-frame="ts">Transition state'
             '</button><button data-frame="product">Product</button><button class="play">Play</button></div>'
             '<div class="contacts"></div>'
             f'<div class="errors"><span></span><span class="head">TS force RMSE ({FORCE_UNIT})</span>'
-            f'<span class="head">Barrier error ({ENERGY_UNIT})</span>{rows}</div>'
-            f'<div class="dft">DFT barrier {r["dft_barrier_kcal_mol"]:.1f} kcal/mol, measured from the '
-            f'{r["reference_endpoint"]}</div></div>')
+            f'<span class="head">Barrier error ({ENERGY_UNIT})</span></div><div class="dft"></div></div>')
+    tabs = ''.join(f'<button data-group="{g["key"]}">{g["label"]}</button>' for g in groups)
     legend = ''.join(f'<span><i style="background:{ATOMS[s][0]}"></i>{s}</span>' for s in ['C', 'H', 'N', 'O'])
-    return (f'<div class="legend-row">{legend}<span><i class="dash"></i>Changing contact</span>'
+    return (f'<div class="tabs">{tabs}</div><p class="tab-note" id="tab-note"></p>'
+            f'<div class="legend-row">{legend}<span><i class="dash"></i>Changing contact</span>'
             '<span class="controls"><button id="play-all">Play all</button></span></div>'
-            f'<div class="molecules">{"".join(cards)}</div>'
-            f'<script type="application/json" id="reactions">{json.dumps(reactions, separators=(",", ":"))}</script>')
+            f'<div class="molecules">{card * 6}</div>'
+            f'<script type="application/json" id="reactions">{json.dumps(config, separators=(",", ":"))}</script>')
 
 
-def index_body(stats):
-    tiles = ''.join(f'<div class="stat"><b>{value}</b><span>{text}</span></div>' for value, text in stats)
-    cards = ''
-    for stem, label, title, summary, *_ in PAGES:
-        badge = '<span class="tag new">3D</span>' if stem == 'figure5' else ''
-        cards += (f'<a class="card" href="{stem}.html"><div class="thumb"><img src="thumbs/{stem}.png" alt="" '
-                  f'loading="lazy"></div><div class="body"><span class="tag">{label}</span>{badge}<h3>{title}</h3>'
-                  f'<p>{summary}</p></div></a>')
-    return (topbar(None) + f'<header class="hero">{hero_curves()}<div class="shade"></div><div class="wrap">'
-            '<div class="eyebrow">Interactive figures</div>'
-            '<h1>Pretrained interatomic potentials along molecular reaction pathways</h1>'
-            '<p class="lede">Seventeen pretrained machine-learning interatomic potentials compared with ωB97M-V/def2-TZVP '
-            'energies and forces on the DORTS-9K reaction dataset, from reactants through transition states to products.</p>'
-            f'<div class="stats">{tiles}</div><div class="cta"><a class="button primary" href="figure1.html">Explore the '
-            f'figures</a><a class="button ghost" href="{REPO}">Code and data on GitHub</a></div></div></header>'
-            '<main class="wrap"><section><h2>Figures</h2><p class="sub">Every figure is drawn from the processed results '
-            f'in the repository. Open one to hover, zoom, and filter checkpoints.</p><div class="grid">{cards}</div>'
-            '</section></main>\n')
+def index_body(summary, facts):
+    rows = ''.join(f'<tr><th>{name}</th><td>{value}</td></tr>' for name, value in facts)
+    figures = ''.join(f'<a class="figure" href="{stem}.html"><img src="thumbs/{stem}.png" alt="" loading="lazy">'
+                      f'<span><b>{label}.</b> {title}</span><small>{line}</small></a>'
+                      for stem, label, title, line, *_ in PAGES)
+    return (topbar(None) + '<main class="paper"><h1>Pretrained interatomic potentials across molecular reaction '
+            'pathways</h1><p class="subtitle">Interactive figures, processed results, and code for a benchmark of '
+            'pretrained machine-learning interatomic potentials on the DORTS-9K reaction dataset</p>'
+            f'<p class="links"><a href="{REPO}">Code and data on GitHub</a><a href="{DATASET}">DORTS-9K on Zenodo</a></p>'
+            f'<h2>Summary</h2><p>{summary}</p><table class="facts">{rows}</table>'
+            '<h2>Figures</h2><p>Each page redraws one figure or table of the paper from the processed results in the '
+            'repository. Hovering gives the values behind each point and curve, clicking a legend entry hides that '
+            'checkpoint, and Figure 5 shows its reactions in 3D.</p>'
+            f'<div class="figures">{figures}</div></main>\n')
 
 
 def thumbnail(fig, stem, width=1000):
@@ -609,9 +625,10 @@ def main():
                 'figure4': lambda: ecdf('full'), 'table2': table2, 'figureS1': lambda: profile('chno'),
                 'figureS2': lambda: ecdf('chno'), 'figureS3': tails}
     reactions = json.loads((DATA / 'figure5_reactions.json').read_text())
+    examples = json.loads((DATA / 'class_examples.json').read_text())
     for stem, label, title, summary, caption, legend in PAGES:
         if stem == 'figure5':
-            body, script = figure5_body(reactions), FIGURE5_SCRIPT
+            body, script = figure5_body(reactions, examples), FIGURE5_SCRIPT
             thumbnail(molecule(reactions[0]), stem, width=960)
         else:
             fig = builders[stem]()
@@ -622,14 +639,24 @@ def main():
                 + page(stem, label, title, caption, legend, body) + script + FOOT.format(repo=REPO))
         (SITE / f'{stem}.html').write_text(html, encoding='utf-8')
         print('Wrote', SITE / f'{stem}.html')
-    full = ts_errors('full')
-    uma = full[full.model.eq('uma_m_omol')].barrier_error_kcal_mol.dropna()
-    counts = read('global_statistics.csv').query("cohort == 'full' and metric == 'force'").iloc[0]
-    stats = [(f'{counts.n_configurations:,}', 'configurations with DFT energies and forces'),
-             (f'{counts.n_reactions:,}', 'reactions'), (f'{len(CHNO_MODELS)}', 'pretrained checkpoints'),
-             (f'{100 * (uma <= 1).mean():.1f}%', 'of UMA-M OMol barriers within 1 kcal/mol')]
+    force = read('global_statistics.csv').query("cohort == 'full' and metric == 'force'").set_index('model')
+    configurations, reactions = force.loc['uma_m_omol', ['n_configurations', 'n_reactions']]
+    uma = ts_errors('chno').query("model == 'uma_m_omol'").barrier_error_kcal_mol.dropna()
+    assert len(uma) == 3713
+    summary = (f'Fifteen pretrained machine-learning interatomic potentials are compared with ωB97M-V/def2-TZVP energies '
+               f'and forces on all {configurations:,} configurations of DORTS-9K, a dataset of {reactions:,} gas-phase '
+               'reaction pathways at fixed GFN2-xTB-derived geometries. Two more checkpoints, ANI-1xnr and AIMNet2-RXN, '
+               'join the comparison on the reactions that contain only carbon, hydrogen, nitrogen, and oxygen (CHNO). '
+               'Checkpoints trained on molecular data are the most accurate. The best of them, UMA-M OMol, has a median '
+               f'force RMSE of {force.loc["uma_m_omol", "median"]:.3f} eV/Å and reproduces '
+               f'{100 * (uma <= 1).mean():.0f}% of the {len(uma):,} CHNO barriers within 1 kcal/mol.')
+    facts = [('Dataset', f'DORTS-9K, {reactions:,} gas-phase reaction pathways, '
+                         f'<a href="{DATASET}">doi.org/10.5281/zenodo.17141108</a>'),
+             ('Configurations', f'{configurations:,} with DFT energies and forces'),
+             ('Reference', 'ωB97M-V/def2-TZVP single points at fixed GFN2-xTB-derived geometries'),
+             ('Checkpoints', f'{len(FULL_MODELS)} on the full dataset and {len(CHNO_MODELS)} on the CHNO subset')]
     html = (HEAD.format(title='DORTS-9K MLIP benchmark', description='Interactive figures of the DORTS-9K MLIP benchmark')
-            + index_body(stats) + FOOT.format(repo=REPO))
+            + index_body(summary, facts) + FOOT.format(repo=REPO))
     (SITE / 'index.html').write_text(html, encoding='utf-8')
     print('Wrote', SITE / 'index.html')
 
