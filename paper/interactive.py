@@ -65,7 +65,7 @@ PAGES = [
      'Six CHNO reactions in 3D, from reactant through transition state to product',
      'Six CHNO reactions with large UMA-M OMol errors, with the transition-state force RMSE and absolute total barrier '
      'error of UMA-M OMol and AIMNet2-RXN. Dashed lines mark contacts that form or break, and their lengths are listed '
-     'under each view for the reactant, transition state, and product.', '3d'),
+     'under each view for the reactant, transition state, and product. Atoms are numbered within each element.', '3d'),
     ('figureS1', 'Figure S1', 'Reaction-profile errors on the CHNO subset',
      'Figure 3 for seventeen checkpoints on the CHNO reactions',
      'The same comparison as Figure 3 for seventeen checkpoints on the 3,706 CHNO reactions with all five anchors.', False),
@@ -455,6 +455,7 @@ FIGURE5_SCRIPT = '''
 <script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.5/3Dmol-min.js"></script>
 <script>
 const reactions = JSON.parse(document.getElementById('reactions').textContent);
+reactions.forEach(rx => { const n = {}; rx.labels = rx.symbols.map(s => s + (n[s] = (n[s] || 0) + 1)); });
 const STYLE = {C: ['#555B66', .36], H: ['#EEF0F3', .24], N: ['#4267C8', .35], O: ['#D44E4B', .35]};
 const FRAMES = ['reactant', 'ts', 'product'];
 const players = [];
@@ -462,7 +463,7 @@ function at(p) { return {x: p[0], y: p[1], z: p[2]}; }
 function draw(entry) {
   const v = entry.viewer, rx = entry.reaction, f = rx.frames[entry.frame];
   v.removeAllModels(); v.removeAllShapes(); v.removeAllLabels();
-  const atoms = f.xyz.map((p, i) => ({elem: rx.symbols[i], x: p[0], y: p[1], z: p[2], serial: i + 1, bonds: [], bondOrder: []}));
+  const atoms = f.xyz.map((p, i) => ({elem: rx.symbols[i], x: p[0], y: p[1], z: p[2], atom: rx.labels[i], bonds: [], bondOrder: []}));
   f.bonds.forEach(([a, b]) => { atoms[a].bonds.push(b); atoms[a].bondOrder.push(1); atoms[b].bonds.push(a); atoms[b].bondOrder.push(1); });
   const model = v.addModel();
   model.addAtoms(atoms);
@@ -474,12 +475,12 @@ function draw(entry) {
     const open = f.dashed.some(([x, y]) => x === a && y === b);
     if (open) v.addCylinder({start: at(p), end: at(q), radius: .09, color: '#E08A1E', dashed: true, dashLength: .17, gapLength: .12});
     const item = document.createElement('span');
-    item.textContent = rx.symbols[a] + (a + 1) + '\u2013' + rx.symbols[b] + (b + 1) + ' ' +
+    item.textContent = rx.labels[a] + '\u2013' + rx.labels[b] + ' ' +
       Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]).toFixed(2) + ' \u00c5' + (open ? '' : ', bonded');
     entry.contacts.appendChild(item);
   });
   v.setHoverable({}, true, function (atom, viewer) {
-    if (!atom.label) atom.label = viewer.addLabel(atom.elem + atom.serial, {position: atom, fontSize: 12,
+    if (!atom.label) atom.label = viewer.addLabel(atom.atom, {position: atom, fontSize: 12,
       backgroundColor: '#0f172a', fontColor: '#fff', backgroundOpacity: .85, inFront: true});
   }, function (atom, viewer) { if (atom.label) { viewer.removeLabel(atom.label); delete atom.label; } });
   v.render();
