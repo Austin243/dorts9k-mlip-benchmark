@@ -2,7 +2,7 @@
 
 Code and processed results for our benchmark of pretrained machine-learning interatomic potentials on the DORTS-9K reaction dataset. Fifteen checkpoints are compared with the ωB97M-V/def2-TZVP reference on all 909,077 configurations, and seventeen on the CHNO subset.
 
-Interactive versions of the figures and Table 2, including 3D views of the Figure 5 reactions, are at [austin243.github.io/dorts9k-mlip-benchmark](https://austin243.github.io/dorts9k-mlip-benchmark/).
+Interactive versions of the figures and Table 2 are at [austin243.github.io/dorts9k-mlip-benchmark](https://austin243.github.io/dorts9k-mlip-benchmark/). The Figure 5 page shows its reactions in 3D, together with six more CHNO reactions of each reaction class.
 
 ## Figures and tables
 
@@ -23,7 +23,7 @@ python paper/figure1.py
 | `paper/tables.py` | Table 2 and Tables S1 to S5 and S7 |
 | `paper/interactive.py` | The interactive site in `results/site`, which GitHub Pages publishes |
 
-The static Figure 5 is built from VESTA renderings of six reactions and is not generated here. The site shows the same reactions in 3D. Every quantity is defined in the [calculation notes](docs/calculations.md).
+The static Figure 5 is built from VESTA renderings of six reactions and is not generated here. The site shows the same reactions in 3D, together with six more CHNO reactions of each reaction class. Every quantity is defined in the [calculation notes](docs/calculations.md).
 
 ## Data
 
@@ -37,6 +37,7 @@ The static Figure 5 is built from VESTA renderings of six reactions and is not g
 | `checkpoints.csv` | Checkpoint files, SHA-256 hashes, heads, precision, and package versions (Table S9) |
 | `nep89_checks.csv` | Independent checks of the NEP89 inference (Table S10) |
 | `figure5_reactions.json` | Reactant, transition-state, and product geometries of the six Figure 5 reactions from DORTS-9K, aligned on the transition state, with their changing contacts and errors |
+| `class_examples.json` | The same for six CHNO reactions of each reaction class, at the 10th, 50th, 75th, 90th, 95th, and 99th percentiles of the UMA-M OMol total barrier error within the class |
 | `reaction_manifest.csv` | Reaction identifiers, formulas, templates, and reaction classes |
 
 The per-configuration model predictions are not included. DORTS-9K itself is available from [Zenodo](https://doi.org/10.5281/zenodo.17141108).
