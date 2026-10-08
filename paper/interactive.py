@@ -48,7 +48,7 @@ PAGES = [
      'Median force RMSE (a) and median absolute per-atom relative-energy error (b) against the mean energy-and-force '
      'evaluation time per configuration on one A100 GPU. The solid line is the Pareto frontier, and dotted lines join '
      'model sizes within a family.', True),
-    ('figure3', 'Figure 3', 'Errors along the reaction profile',
+    ('figure3', 'Figure 3', 'Errors across the reaction profile',
      'Median errors at the five direct anchors of each reaction',
      'Median force RMSE and median absolute total energy error at the five direct anchors of the 8,474 reactions that '
      'have all five. Energies are measured from the reference endpoint, and the last column is the error in the '
