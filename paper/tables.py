@@ -1,4 +1,7 @@
-"""Table 2 and the computed Supporting Information tables (S1-S5, S7), rounded as in the paper."""
+"""Table 2 and the computed Supporting Information tables S1 to S3, rounded as in the preprint.
+
+Tables with the prefix extra_ are additional material that is not in the preprint.
+"""
 import numpy as np
 import pandas as pd
 
@@ -53,7 +56,8 @@ def table_s1():
     write('tableS1', pd.DataFrame(rows))
 
 
-def table_s2(data):
+def extra_class_statistics(data):
+    """Additional material: barrier and TS force statistics of the CHNO subset by reaction class."""
     rows = []
     for reaction_class in CLASSES:
         for model in CHNO_MODELS:
@@ -66,7 +70,7 @@ def table_s2(data):
                          'Within 1 kcal/mol (%)': sig(100 * (barrier <= 1).mean()),
                          'Force mean': sig(force.mean()), 'Force median': sig(np.median(force)),
                          'Force P95': sig(np.quantile(force, .95))})
-    write('tableS2', pd.DataFrame(rows))
+    write('extra_class_statistics', pd.DataFrame(rows))
 
 
 def bootstrap(data):
@@ -100,7 +104,8 @@ def bootstrap(data):
     return models, results
 
 
-def table_s3(data):
+def table_s2_intervals(data):
+    """Table S2, MAE, mean, and fraction within 1 kcal/mol with bootstrap intervals."""
     models, results = bootstrap(data)
     for metric, part in [(FORCE, 'B'), (BARRIER, 'A')]:
         names, estimate, lower, upper, n = results[metric]
@@ -111,12 +116,13 @@ def table_s3(data):
             for k, name in enumerate(names):
                 row[f'{name} [95% CI]'] = f'{sig(estimate[k, j])} [{sig(lower[k, j])}, {sig(upper[k, j])}]'
             rows.append(row)
-        print(f'\nTable S3 part {part}: {n:,} reactions per checkpoint')
-        write(f'tableS3_part{part}', pd.DataFrame(rows))
+        print(f'\nTable S2 part {part}: {n:,} reactions per checkpoint')
+        write(f'tableS2_part{part}', pd.DataFrame(rows))
 
 
-def table_s4(data):
-    for metric, part in [(FORCE, 'A'), (BARRIER, 'B')]:
+def table_s2_tails(data):
+    """Table S2, upper-tail statistics."""
+    for metric, part in [(FORCE, 'C'), (BARRIER, 'D')]:
         rows = []
         for model in CHNO_MODELS:
             s = tail_statistics(data.loc[data.model.eq(model), metric])
@@ -125,11 +131,11 @@ def table_s4(data):
                                                       ('P95', 'p95'), ('P99', 'p99'), ('Maximum', 'maximum'),
                                                       ('Worst 1% mean', 'worst_1pct_mean'),
                                                       ('Worst 1% error share (%)', 'worst_1pct_error_share_percent')]}})
-        write(f'tableS4_part{part}', pd.DataFrame(rows))
+        write(f'tableS2_part{part}', pd.DataFrame(rows))
 
 
-def table_s5(data):
-    """UMA-M OMol against AIMNet2-RXN overall and on each checkpoint's own worst 1%."""
+def table_s3_and_comparison(data):
+    """Table S3, and as additional material UMA-M OMol against AIMNet2-RXN overall and on each checkpoint's own worst 1%."""
     worst = {}
     for metric, part in [(FORCE, 'A'), (BARRIER, 'B')]:
         pair = data.pivot(index='reaction_id', columns='model', values=metric)[['uma_m_omol', 'aimnet2_rxn']].dropna()
@@ -144,7 +150,7 @@ def table_s5(data):
                          'RXN mean': sig(r[idx].mean()), 'UMA median': sig(np.median(u[idx])),
                          'RXN median': sig(np.median(r[idx])), 'UMA smaller count': int((u[idx] < r[idx]).sum()),
                          'RXN smaller count': int((r[idx] < u[idx]).sum())})
-        write(f'tableS5_part{part}', pd.DataFrame(rows))
+        write(f'extra_uma_vs_aimnet2rxn_part{part}', pd.DataFrame(rows))
     print('Shared worst-1% reactions: force', len(worst[FORCE]['UMA'] & worst[FORCE]['RXN']),
           ', barrier', len(worst[BARRIER]['UMA'] & worst[BARRIER]['RXN']),
           ', UMA force and barrier', len(worst[FORCE]['UMA'] & worst[BARRIER]['UMA']))
@@ -163,10 +169,10 @@ def table_s5(data):
                      'Maximum': sig(values.max()), 'MAE': sig(np.abs(values).mean()),
                      'Negative (of 38)': int((values < 0).sum()),
                      **{name: sig(np.median(values[mask])) for name, mask in groups.items()}})
-    write('tableS5_partC', pd.DataFrame(rows))
+    write('tableS3', pd.DataFrame(rows))
 
 
-def table_s7(data):
+def extra_template_split(data):
     """Reactions in two recurring templates where AIMNet2-RXN has the smaller error."""
     data = data.assign(template=data.reaction_id.str.split('_', n=3).str[-1])
     rows = []
@@ -178,18 +184,18 @@ def table_s7(data):
             counts[metric] = int((pair.aimnet2_rxn < pair.uma_m_omol).sum())
         rows.append({'Template': template, 'Reactions': part.reaction_id.nunique(),
                      'Lower force error': counts[FORCE], 'Lower barrier error': counts[BARRIER]})
-    write('tableS7', pd.DataFrame(rows))
+    write('extra_template_split', pd.DataFrame(rows))
 
 
 def main():
     data = ts_errors('chno')
     table2(data)
     table_s1()
-    table_s2(data)
-    table_s3(data)
-    table_s4(data)
-    table_s5(data)
-    table_s7(data)
+    table_s2_intervals(data)
+    table_s2_tails(data)
+    table_s3_and_comparison(data)
+    extra_class_statistics(data)
+    extra_template_split(data)
 
 
 if __name__ == '__main__':

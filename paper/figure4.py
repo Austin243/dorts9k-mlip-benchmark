@@ -1,7 +1,7 @@
-"""Figures 4 and S2: empirical cumulative distributions of TS errors by reaction class.
+"""Figure 4 and an additional CHNO version: empirical cumulative distributions of TS errors by reaction class.
 
-Figure 4 shows the fifteen checkpoints on the full dataset and Figure S2 the seventeen checkpoints on
-the CHNO subset. Rows are reaction classes. The left column is the absolute total barrier error (a-d)
+Figure 4 shows the fifteen checkpoints on the full dataset. The additional version, which is not in the
+preprint, shows the seventeen checkpoints on the CHNO subset (extra_chno_ecdf). Rows are reaction classes. The left column is the absolute total barrier error (a-d)
 and the right column the TS force RMSE (e-h). Every error enters its ECDF. Errors below the lower
 axis limit set the starting height of the curve.
 """
@@ -125,7 +125,7 @@ def main():
     plt.rcParams.update(STYLE)
     plt.rcParams.update(GRACE)
     render('full', 'figure4')
-    render('chno', 'figureS2')
+    render('chno', 'extra_chno_ecdf')
 
 
 if __name__ == '__main__':
