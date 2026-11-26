@@ -8,7 +8,7 @@ Interactive versions of the figures and Table 2 are at [austin243.github.io/dort
 
 If you use this code or the processed results, please cite the preprint:
 
-Ellis, A.; Morelock, R.; Bagchi, S.; dos Santos, A. M.; Goswami, M.; Jakowski, J.; Huang, J.; Ganesh, P.; Ivanov, I. Accuracy and Limits of Pretrained Interatomic Potentials Across Molecular Reaction Pathways. *ChemRxiv* 2026. DOI: [pending, to be added once assigned].
+Ellis, A.; Morelock, R.; Bagchi, S.; dos Santos, A. M.; Goswami, M.; Jakowski, J.; Huang, J.; Ganesh, P.; Ivanov, I. Accuracy and Limits of Pretrained Interatomic Potentials Across Molecular Reaction Pathways. *ChemRxiv* 2026. DOI: [10.26434/chemrxiv.15012574/v1](https://doi.org/10.26434/chemrxiv.15012574/v1).
 
 ```bibtex
 @article{ellis2026accuracy,
@@ -16,7 +16,7 @@ Ellis, A.; Morelock, R.; Bagchi, S.; dos Santos, A. M.; Goswami, M.; Jakowski, J
   title   = {Accuracy and Limits of Pretrained Interatomic Potentials Across Molecular Reaction Pathways},
   journal = {ChemRxiv},
   year    = {2026},
-  note    = {DOI pending}
+  doi     = {10.26434/chemrxiv.15012574/v1}
 }
 ```
 

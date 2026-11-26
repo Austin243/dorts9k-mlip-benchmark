@@ -46,4 +46,6 @@ preferred-citation:
       given-names: Ilia
   journal: ChemRxiv
   year: 2026
-  # DOI pending: add `doi: 10.26434/chemrxiv-2026-XXXXX` once ChemRxiv assigns it.
+  month: 11
+  doi: 10.26434/chemrxiv.15012574/v1
+  url: https://doi.org/10.26434/chemrxiv.15012574/v1
