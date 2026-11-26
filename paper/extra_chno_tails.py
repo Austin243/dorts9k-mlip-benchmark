@@ -1,4 +1,4 @@
-"""Figure S3: median, P95, P99, and maximum CHNO TS errors of all seventeen checkpoints."""
+"""Additional material, not in the preprint: median, P95, P99, and maximum CHNO TS errors of all seventeen checkpoints."""
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -61,7 +61,7 @@ def main():
     fig.legend(handles=handles, loc='upper center', bbox_to_anchor=(.60, .995), ncol=4, frameon=False,
                columnspacing=1.15)
     fig.canvas.draw()
-    save(fig, 'figureS3')
+    save(fig, 'extra_chno_tails')
 
 
 if __name__ == '__main__':

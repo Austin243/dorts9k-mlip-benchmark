@@ -36,12 +36,12 @@ python paper/figure1.py
 | `paper/figure1.py` | Figure 1, global error distributions |
 | `paper/figure2.py` | Figure 2, accuracy against evaluation time |
 | `paper/figure3.py` | Figures 3 and S1, errors at the five direct anchors |
-| `paper/figure4.py` | Figures 4 and S2, transition-state errors by reaction class |
-| `paper/figureS3.py` | Figure S3, CHNO error tails |
-| `paper/tables.py` | Table 2 and Tables S1 to S5 and S7 |
+| `paper/figure4.py` | Figure 4, transition-state errors by reaction class, and an additional CHNO version (`extra_chno_ecdf`) |
+| `paper/extra_chno_tails.py` | Additional CHNO error tails (`extra_chno_tails`) |
+| `paper/tables.py` | Table 2 and Tables S1 to S3, and additional tables with the prefix `extra_` |
 | `paper/interactive.py` | The interactive site in `results/site`, which GitHub Pages publishes |
 
-The static Figure 5 is built from VESTA renderings of six reactions and is not generated here. The site shows the same reactions in 3D, together with six more CHNO reactions of each reaction class. Every quantity is defined in the [calculation notes](docs/calculations.md).
+Output names beginning with `extra_` are additional material that is not in the preprint. Figure S2 is not generated here: `data/figureS2_omol25_coverage.png` is the figure as published in the Supporting Information, and the embeddings behind it are not included. The static Figure 5 is built from VESTA renderings of six reactions and is not generated here. The site shows the same reactions in 3D, together with six more CHNO reactions of each reaction class. Every quantity is defined in the [calculation notes](docs/calculations.md).
 
 ## Data
 
@@ -56,6 +56,7 @@ The static Figure 5 is built from VESTA renderings of six reactions and is not g
 | `nep89_checks.csv` | Independent checks of the NEP89 inference (summarized in Table S6) |
 | `figure5_reactions.json` | Reactant, transition-state, and product geometries of the six Figure 5 reactions from DORTS-9K, aligned on the transition state, with their changing contacts and errors |
 | `class_examples.json` | The same for six CHNO reactions of each reaction class, at the 10th, 50th, 75th, 90th, 95th, and 99th percentiles of the UMA-M OMol total barrier error within the class |
+| `figureS2_omol25_coverage.png` | Figure S2, DORTS-9K coverage relative to the OMol25 training subset, as published in the Supporting Information |
 | `reaction_manifest.csv` | Reaction identifiers, formulas, templates, and reaction classes |
 
 The per-configuration model predictions are not included. DORTS-9K itself is available from [Zenodo](https://doi.org/10.5281/zenodo.17141108).

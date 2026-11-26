@@ -5,15 +5,17 @@ with its bootstrap intervals, and Figure 5 becomes a page of 3D molecule viewers
 Pages publishes the site from the main branch through .github/workflows/pages.yml.
 """
 import json
+import shutil
 
 import numpy as np
+from PIL import Image
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from common import CHNO_MODELS, CLASSES, COHORT_MODELS, COLORS, DATA, FULL_MODELS, LABELS, ROOT, read, tail_statistics, ts_errors
 from figure2 import CONNECTOR_COLOR, FRONT_COLOR, LEGEND_ORDER, MARKERS, SIZE_PATHS, prepare_table
 from figure4 import LEGENDS, PATTERN
-from figureS3 import FAMILY_COLORS, family
+from extra_chno_tails import FAMILY_COLORS, family
 from tables import BARRIER, FORCE, bootstrap
 
 SITE = ROOT / 'results' / 'site'
@@ -60,7 +62,7 @@ PAGES = [
     ('table2', 'Table 2', 'Mean transition-state errors on the CHNO subset',
      'Barrier MAE and TS force RMSE of all seventeen checkpoints with 95% intervals',
      'Total barrier MAE (a) and mean transition-state force RMSE (b) of seventeen checkpoints on the 3,713 and 3,871 '
-     'CHNO reactions, sorted by barrier MAE. Error bars are the pointwise 95% bootstrap intervals of Table S3. '
+     'CHNO reactions, sorted by barrier MAE. Error bars are the pointwise 95% bootstrap intervals of Table S2. '
      'Hovering also gives the MAE as a percentage of the mean DFT barrier, 62.9 kcal/mol.', False),
     ('figure5', 'Figure 5', 'Reactions with large UMA-M OMol errors',
      'Six CHNO reactions in 3D from reactant through transition state to product, and six more of each class',
@@ -72,15 +74,19 @@ PAGES = [
     ('figureS1', 'Figure S1', 'Reaction-profile errors on the CHNO subset',
      'Figure 3 for seventeen checkpoints on the CHNO reactions',
      'The same comparison as Figure 3 for seventeen checkpoints on the 3,706 CHNO reactions with all five anchors.', False),
-    ('figureS2', 'Figure S2', 'Transition-state errors on the CHNO subset',
+    ('figureS2', 'Figure S2', 'DORTS-9K coverage relative to OMol25',
+     'Nearest-neighbor distances to the OMol25 training subset in UMA-S embeddings',
+     'DORTS-9K coverage relative to the OMol25 4M training subset in UMA-S-1.2.1 embeddings. (a) Joint t-SNE map of all 909,077 DORTS configurations and 50,000 sampled OMol structures. (b) Cumulative distributions of the distance to the nearest of 3,986,754 OMol structures, calculated in the original embedding space. Each DORTS group contains the direct anchors of the indicated type and their normal-mode samples. The comparison includes 43,767 direct anchors and 865,310 normal-mode samples. Each configuration was represented by the mean over atoms of the final 128 scalar (l = 0) backbone features with OMol conditioning. Nearest neighbors were found by exhaustive Euclidean search without feature normalization. The t-SNE map uses a joint principal-component reduction to 50 dimensions and serves only as a visualization of these embeddings. Median distances are 0.1108 for the reactant group, 0.1594 for the transition-state group, 0.1107 for the product group, and 0.1353 and 0.1339 for the reverse and forward maximum-slope groups. Normal-mode samples have larger median distances than direct anchors for each of the five types. These representation-dependent distances do not establish an absolute out-of-distribution threshold or exclude close training configurations.', 'static'),
+    ('extra_chno_ecdf', 'Additional: CHNO CDFs', 'Transition-state errors on the CHNO subset',
      'Figure 4 for seventeen checkpoints on the CHNO reactions',
-     'The same comparison as Figure 4 for seventeen checkpoints on the CHNO reactions.', True),
-    ('figureS3', 'Figure S3', 'Error tails on the CHNO subset',
+     'Additional material, not in the preprint. The same comparison as Figure 4 for seventeen checkpoints on the CHNO '
+     'reactions.', True),
+    ('extra_chno_tails', 'Additional: CHNO tails', 'Error tails on the CHNO subset',
      'Median, P95, P99, and maximum errors of every checkpoint',
-     'Median, P95, P99, and maximum transition-state force RMSE (a) and absolute total barrier error (b) of seventeen '
-     'checkpoints on the CHNO subset, ordered by the median force error.', True),
+     'Additional material, not in the preprint. Median, P95, P99, and maximum transition-state force RMSE (a) and '
+     'absolute total barrier error (b) of seventeen checkpoints on the CHNO subset, ordered by the median force error.', True),
 ]
-TIPS = {True: ['Hover for values', 'Click a legend entry to hide it', 'Double-click an entry to isolate it',
+TIPS = {'static': [], True: ['Hover for values', 'Click a legend entry to hide it', 'Double-click an entry to isolate it',
                'Drag to zoom, double-click to reset'],
         False: ['Hover for values', 'Drag to zoom', 'Double-click to reset'],
         '3d': ['Drag to rotate', 'Scroll to zoom', 'Hover over an atom to name it', 'Play steps from reactant to product']}
@@ -258,7 +264,7 @@ def tails():
 
 
 def table2():
-    """Table 2 as bars, with the Table S3 intervals as error bars."""
+    """Table 2 as bars, with the Table S2 intervals as error bars."""
     data = ts_errors('chno')
     models, results = bootstrap(data)
     mean_barrier = data[data.model.eq('uma_m_omol')].reference_barrier_kcal_mol.dropna().mean()
@@ -541,6 +547,11 @@ select(location.hash.slice(1));
 '''
 
 
+def heading(label, title):
+    """Figures and tables are numbered as in the preprint, and additional material has no number."""
+    return title if label.startswith('Additional') else f'{label}. {title}'
+
+
 def topbar(current):
     links = ''.join(f'<a href="{stem}.html"{" class=current" if stem == current else ""}>{label}</a>'
                     for stem, label, *_ in PAGES)
@@ -552,13 +563,13 @@ def page(stem, label, title, caption, legend, body):
     i = [p[0] for p in PAGES].index(stem)
     previous, following = PAGES[i - 1] if i else None, PAGES[i + 1] if i + 1 < len(PAGES) else None
     pager = '<div class="pager">'
-    pager += (f'<a href="{previous[0]}.html"><small>Previous</small>{previous[1]}. {previous[2]}</a>' if previous
+    pager += (f'<a href="{previous[0]}.html"><small>Previous</small>{heading(previous[1], previous[2])}</a>' if previous
               else '<a href="index.html"><small>Back to</small>All figures</a>')
-    pager += (f'<a class="next" href="{following[0]}.html"><small>Next</small>{following[1]}. {following[2]}</a>'
+    pager += (f'<a class="next" href="{following[0]}.html"><small>Next</small>{heading(following[1], following[2])}</a>'
               if following else '<a class="next" href="index.html"><small>Back to</small>All figures</a>')
     pager += '</div>'
     tips = ' '.join(f'{t}.' for t in TIPS[legend])
-    return (topbar(stem) + f'<main class="wrap"><div class="page-head"><h1>{label}. {title}</h1>'
+    return (topbar(stem) + f'<main class="wrap"><div class="page-head"><h1>{heading(label, title)}</h1>'
             f'<p class="caption">{caption}</p><p class="tips">{tips}</p></div>{body}{pager}</main>\n')
 
 
@@ -596,7 +607,7 @@ def figure5_body(reactions, examples):
 def index_body(summary, facts):
     rows = ''.join(f'<tr><th>{name}</th><td>{value}</td></tr>' for name, value in facts)
     figures = ''.join(f'<a class="figure" href="{stem}.html"><img src="thumbs/{stem}.png" alt="" loading="lazy">'
-                      f'<span><b>{label}.</b> {title}</span><small>{line}</small></a>'
+                      f'<span>{"" if label.startswith("Additional") else f"<b>{label}.</b> "}{title}</span><small>{line}</small></a>'
                       for stem, label, title, line, *_ in PAGES)
     return (topbar(None) + '<main class="paper"><h1>Pretrained interatomic potentials across molecular reaction '
             'pathways</h1><p class="subtitle">Interactive figures, processed results, and code for a benchmark of '
@@ -623,11 +634,19 @@ def main():
               'modeBarButtonsToRemove': ['select2d', 'lasso2d']}
     builders = {'figure1': figure1, 'figure2': figure2, 'figure3': lambda: profile('full'),
                 'figure4': lambda: ecdf('full'), 'table2': table2, 'figureS1': lambda: profile('chno'),
-                'figureS2': lambda: ecdf('chno'), 'figureS3': tails}
+                'extra_chno_ecdf': lambda: ecdf('chno'), 'extra_chno_tails': tails}
     reactions = json.loads((DATA / 'figure5_reactions.json').read_text())
     examples = json.loads((DATA / 'class_examples.json').read_text())
     for stem, label, title, summary, caption, legend in PAGES:
-        if stem == 'figure5':
+        if stem == 'figureS2':
+            body = ('<div class="card plot"><img src="figureS2.png" alt="DORTS-9K coverage relative to OMol25" '
+                    'style="width:100%;height:auto;display:block"></div>')
+            script = ''
+            shutil.copyfile(DATA / 'figureS2_omol25_coverage.png', SITE / 'figureS2.png')
+            (SITE / 'thumbs').mkdir(exist_ok=True)
+            with Image.open(DATA / 'figureS2_omol25_coverage.png') as image:
+                image.convert('RGB').resize((600, round(600 * image.height / image.width))).save(SITE / 'thumbs' / 'figureS2.png')
+        elif stem == 'figure5':
             body, script = figure5_body(reactions, examples), FIGURE5_SCRIPT
             thumbnail(molecule(reactions[0]), stem, width=960)
         else:
@@ -635,7 +654,7 @@ def main():
             body = '<div class="card plot">' + fig.to_html(full_html=False, include_plotlyjs='cdn', config=config) + '</div>'
             script = ''
             thumbnail(fig, stem)
-        html = (HEAD.format(title=f'{label}. {title}', description=summary)
+        html = (HEAD.format(title=heading(label, title), description=summary)
                 + page(stem, label, title, caption, legend, body) + script + FOOT.format(repo=REPO))
         (SITE / f'{stem}.html').write_text(html, encoding='utf-8')
         print('Wrote', SITE / f'{stem}.html')
