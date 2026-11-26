@@ -4,6 +4,24 @@ Code and processed results for our benchmark of pretrained machine-learning inte
 
 Interactive versions of the figures and Table 2 are at [austin243.github.io/dorts9k-mlip-benchmark](https://austin243.github.io/dorts9k-mlip-benchmark/). The Figure 5 page shows its reactions in 3D, together with six more CHNO reactions of each reaction class.
 
+## Citation
+
+If you use this code or the processed results, please cite the preprint:
+
+Ellis, A.; Morelock, R.; Bagchi, S.; dos Santos, A. M.; Goswami, M.; Jakowski, J.; Huang, J.; Ganesh, P.; Ivanov, I. Accuracy and Limits of Pretrained Interatomic Potentials Across Molecular Reaction Pathways. *ChemRxiv* 2026. DOI: [pending, to be added once assigned].
+
+```bibtex
+@article{ellis2026accuracy,
+  author  = {Ellis, Austin and Morelock, Ryan and Bagchi, Soumendu and {dos Santos}, Antonio M. and Goswami, Monojoy and Jakowski, Jacek and Huang, Jingsong and Ganesh, Panchapakesan and Ivanov, Ilia},
+  title   = {Accuracy and Limits of Pretrained Interatomic Potentials Across Molecular Reaction Pathways},
+  journal = {ChemRxiv},
+  year    = {2026},
+  note    = {DOI pending}
+}
+```
+
+Please also cite the DORTS-9K dataset ([Zenodo](https://doi.org/10.5281/zenodo.17141108)).
+
 ## Figures and tables
 
 The scripts in `paper/` rebuild the data figures and tables of the paper from the processed results in `data/`. Run them from the repository root after installing the analysis environment. They write to `results/figures` and `results/tables` and use the Arial font.
@@ -33,9 +51,9 @@ The static Figure 5 is built from VESTA renderings of six reactions and is not g
 | `global_statistics.csv` | Force RMSE and relative-energy error statistics pooled over configurations, for the full dataset and the CHNO subset |
 | `profile_statistics.csv` | Mean and quartiles of the errors at the five direct anchors, over the reactions that have all five |
 | `timing.csv` | Mean evaluation time per configuration of the fifteen full-dataset checkpoints |
-| `largest_uma_barrier_errors_signed.csv` | Signed total barrier errors of all seventeen checkpoints on the 38 reactions with the largest UMA-M OMol errors (Table S5) |
-| `checkpoints.csv` | Checkpoint files, SHA-256 hashes, heads, precision, and package versions (Table S9) |
-| `nep89_checks.csv` | Independent checks of the NEP89 inference (Table S10) |
+| `largest_uma_barrier_errors_signed.csv` | Signed total barrier errors of all seventeen checkpoints on the 38 reactions with the largest UMA-M OMol errors (Table S3) |
+| `checkpoints.csv` | Checkpoint files, SHA-256 hashes, heads, precision, and package versions (Table S6) |
+| `nep89_checks.csv` | Independent checks of the NEP89 inference (summarized in Table S6) |
 | `figure5_reactions.json` | Reactant, transition-state, and product geometries of the six Figure 5 reactions from DORTS-9K, aligned on the transition state, with their changing contacts and errors |
 | `class_examples.json` | The same for six CHNO reactions of each reaction class, at the 10th, 50th, 75th, 90th, 95th, and 99th percentiles of the UMA-M OMol total barrier error within the class |
 | `reaction_manifest.csv` | Reaction identifiers, formulas, templates, and reaction classes |

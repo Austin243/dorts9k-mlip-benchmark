@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: If you use this code or the processed results, please cite the preprint below and the DORTS-9K dataset.
+title: DORTS-9K MLIP benchmark
+type: software
+authors:
+  - family-names: Ellis
+    given-names: Austin
+  - family-names: Morelock
+    given-names: Ryan
+  - family-names: Bagchi
+    given-names: Soumendu
+  - family-names: dos Santos
+    given-names: Antonio M.
+  - family-names: Goswami
+    given-names: Monojoy
+  - family-names: Jakowski
+    given-names: Jacek
+  - family-names: Huang
+    given-names: Jingsong
+  - family-names: Ganesh
+    given-names: Panchapakesan
+  - family-names: Ivanov
+    given-names: Ilia
+repository-code: https://github.com/Austin243/dorts9k-mlip-benchmark
+preferred-citation:
+  type: article
+  title: Accuracy and Limits of Pretrained Interatomic Potentials Across Molecular Reaction Pathways
+  authors:
+    - family-names: Ellis
+      given-names: Austin
+    - family-names: Morelock
+      given-names: Ryan
+    - family-names: Bagchi
+      given-names: Soumendu
+    - family-names: dos Santos
+      given-names: Antonio M.
+    - family-names: Goswami
+      given-names: Monojoy
+    - family-names: Jakowski
+      given-names: Jacek
+    - family-names: Huang
+      given-names: Jingsong
+    - family-names: Ganesh
+      given-names: Panchapakesan
+    - family-names: Ivanov
+      given-names: Ilia
+  journal: ChemRxiv
+  year: 2026
+  # DOI pending: add `doi: 10.26434/chemrxiv-2026-XXXXX` once ChemRxiv assigns it.
